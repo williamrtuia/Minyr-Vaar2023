@@ -1,99 +1,60 @@
 package main
 
 import (
-    "bufio"
-    "fmt"
-    "io/ioutil"
-    "os"
-    "strconv"
-    "strings"
+	"bufio"
+	"fmt"
+	"os"
+	"strings"
 
-    "github.com/williamrtuia/funtemps"
+	"github.com/williamrtuia/Minyr-Vaar2023/yr"
 )
 
 func main() {
-    for {
-        fmt.Println("Velkommen til minyr!")
-        fmt.Println("Skriv 'convert' for å konvertere temperaturer fra Celsius til Fahrenheit.")
-        fmt.Println("Skriv 'average' for å beregne gjennomsnittstemperaturer.")
-        fmt.Println("Skriv 'exit' for å avslutte programmet.")
+	var input string
+	scanner := bufio.NewScanner(os.Stdin)
 
-        scanner := bufio.NewScanner(os.Stdin)
-        scanner.Scan()
-        input := scanner.Text()
+	for {
+		fmt.Println("Venligst velg convert, average eller exit:")
 
-        switch input {
-        case "convert":
-            // Les inn data fra filen
-            data, err := ioutil.ReadFile("kjevik-temp-celsius-20220318-20230318.csv")
-            if err != nil {
-                fmt.Println("Kunne ikke lese inn filen. Feilmelding:", err)
-                continue
-            }
+		if !scanner.Scan() {
+			break
+		}
+		input = strings.ToLower(scanner.Text())
 
-            // Konverter temperaturer og lagre i ny fil
-            lines := strings.Split(string(data), "\n")
-            var convertedLines []string
-            for i, line := range lines {
-                if i == 0 {
-                    // Kopier header-linjen til ny fil
-                    convertedLines = append(convertedLines, line)
-                } else {
-                    fields := strings.Split(line, ";")
-                    celsius, err := strconv.ParseFloat(fields[3], 64)
-                    if err != nil {
-                        // Kunne ikke konvertere til float
-                        continue
-                    }
-                    fahr := conv.CelsiusToFahrenheit(celsius)
-                    fields[3] = fmt.Sprintf("%.2f", fahr)
-                    convertedLine := strings.Join(fields, ";")
-                    convertedLines = append(convertedLines, convertedLine)
-                }
-            }
-            newFileData := strings.Join(convertedLines, "\n")
-            err = ioutil.WriteFile("kjevik-fahr-celsius-20220318-20230318.csv", []byte(newFileData), 0644)
-            if err != nil {
-                fmt.Println("Kunne ikke skrive til ny fil. Feilmelding:", err)
-                continue
-            }
-            fmt.Println("Konvertering ferdig. Ny fil lagret.")
+		switch input {
+		case "q", "exit":
+			fmt.Println("exit")
+			return
 
-        case "average":
-            // Les inn data fra filen
-            data, err := ioutil.ReadFile("kjevik-temp-celsius-20220318-20230318.csv")
-            if err != nil {
-                fmt.Println("Kunne ikke lese inn filen. Feilmelding:", err)
-                continue
-            }
+		case "convert":
+			fmt.Println("Konverterer alle målingene gitt i grader Celsius til grader Fahrenheit...")
+			// funksjon som gjør åpner fil, leser linjer, gjør endringer og lagrer nye linjer i en ny fil
+			yr.ConvertTemperature()
 
-              // Beregn gjennomsnittstemperaturer
-            lines := strings.Split(string(data), "\n")
-            var celsiusTemps []float64
-            for i, line := range lines {
-                if i == 0 {
-                    // Hopp over header-linjen
-                    continue
-                } else {
-                    fields := strings.Split(line, ";")
-                    celsius, err := strconv.ParseFloat(fields[3], 64)
-                    if err != nil {
-                        // Kunne ikke konvertere til float
-                        continue
-                    }
-                    celsiusTemps =                     append(celsiusTemps, celsius)
-                }
-            }
-            avgTemp := conv.AverageTemperature(celsiusTemps)
-            fmt.Printf("Gjennomsnittstemperaturen er %.2f grader Celsius.\n", avgTemp)
+		case "average":
+			fmt.Println("Gjennomsnitt-kalkulator")
 
-        case "exit":
-            fmt.Println("Ha en fin dag!")
-            return
+			for {
+				// funksjon som deler opp datalinjene for å single ut det siste tallet, som er temperatur i celsius.
+				// Funksjonen tar så alle de siste tallene i filen og regner ut gjennomnsnitt i enten celsius eller fahr.
+				yr.AverageTemperature()
 
-        default:
-            fmt.Println("Ugyldig input. Vennligst prøv igjen.")
-        }
-    }
+				var input2 string
+				scanjn := bufio.NewScanner(os.Stdin)
+				fmt.Println("Tilbake til hovedmeny? (j/n)")
+				for scanjn.Scan() {
+					input2 = scanjn.Text()
+					if input2 == "j" {
+						break
+					} else if input2 == "n" {
+						break
+					}
+				}
+				if input2 == "j" {
+					break
+				}
+			}
+		}
+	}
+	fmt.Println("Avslutter program.")
 }
-
